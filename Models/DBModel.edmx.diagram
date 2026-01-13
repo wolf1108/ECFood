@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="2cfb358f953c4082b03c3a6595eddcb6" Name="Diagram1" ZoomLevel="60">
+        <EntityTypeShape EntityType="DatabaseModel.Categories" Width="1.5" PointX="0.75" PointY="3.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="DatabaseModel.Comments" Width="1.5" PointX="3" PointY="6.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="DatabaseModel.ContactForms" Width="1.5" PointX="3" PointY="10" IsExpanded="true" />
+        <EntityTypeShape EntityType="DatabaseModel.Favorites" Width="1.5" PointX="6" PointY="6.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="DatabaseModel.Recipes" Width="1.5" PointX="3" PointY="2" IsExpanded="true" />
+        <EntityTypeShape EntityType="DatabaseModel.Users" Width="1.5" PointX="0.75" PointY="6.5" IsExpanded="true" />
+        <AssociationConnector Association="DatabaseModel.FK_Recipes_Categories" ManuallyRouted="false" />
+        <AssociationConnector Association="DatabaseModel.FK_Comments_Recipes" ManuallyRouted="false" />
+        <AssociationConnector Association="DatabaseModel.FK_Comments_Users" ManuallyRouted="false" />
+        <AssociationConnector Association="DatabaseModel.FK_ContactForms_Users" ManuallyRouted="false" />
+        <AssociationConnector Association="DatabaseModel.FK_Favorites_Recipes" ManuallyRouted="false" />
+        <AssociationConnector Association="DatabaseModel.FK_Favorites_Users" ManuallyRouted="false" />
+        <AssociationConnector Association="DatabaseModel.FK_Recipes_Users" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="DatabaseModel.RecipeLikeCounts" Width="1.5" PointX="5.25" PointY="3.375" />
+        <AssociationConnector Association="DatabaseModel.FK_RecipeLikeCounts_Recipes" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>
