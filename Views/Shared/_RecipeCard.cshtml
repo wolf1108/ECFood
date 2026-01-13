@@ -1,0 +1,110 @@
+﻿@model ECFood.Models.Recipes
+
+@{
+    var favoriteCounts = ViewBag.FavoriteCounts as Dictionary<int, int>
+    ;
+    var averageRatings = ViewBag.AverageRatings as Dictionary<int, double>
+        ;
+        var youtubeIds = ViewBag.YoutubeIds as Dictionary<int, string>
+    ;
+
+    var rating = averageRatings?.ContainsKey(Model.RecipeId) == true ? averageRatings[Model.RecipeId] : 0;
+    var fullStars = (int)Math.Floor(rating);
+    var hasHalfStar = (rating - fullStars) >= 0.5;
+    var emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    var favoriteCount = favoriteCounts?.ContainsKey(Model.RecipeId) == true ? favoriteCounts[Model.RecipeId] : 0;
+    var youtubeId = youtubeIds?.ContainsKey(Model.RecipeId) == true ? youtubeIds[Model.RecipeId] : "";
+
+    // 這裡修正了用來檢查是否登入的 userName
+    var userName = Session["UserName"] as string;
+    }
+
+    <div class="col">
+        <div class="card h-100 shadow-sm rounded-3">
+            <img src="@(
+            string.IsNullOrEmpty(Model.ImageUrl)
+                ? (youtubeIds?.ContainsKey(Model.RecipeId) == true && !string.IsNullOrEmpty(youtubeIds[Model.RecipeId])
+                    ? $"https://img.youtube.com/vi/{youtubeIds[Model.RecipeId]}/0.jpg"
+                 : "/Images/default.jpg" ) // 如果沒有圖片或影片URL，顯示預設圖片
+                 : Model.ImageUrl
+                 )"
+                 class="card-img-top"
+                 alt="@Model.Title"
+                 style="object-fit: cover; height: 225px;" />
+
+            <div class="card-body">
+                <h5 class="card-title">@Model.Title</h5>
+
+                <!-- 收藏數跟星星 -->
+                <p class="favorite-count d-flex align-items-center justify-content-between">
+                    <span class="rating-stars me-0">
+                        @for (int i = 0; i < fullStars; i++)
+                        {
+                        <i class="bi bi-star-fill text-warning"></i>
+                        }
+                        @if (hasHalfStar)
+                        {
+                        <i class="bi bi-star-half text-warning"></i>
+                        }
+                        @for (int i = 0; i < emptyStars; i++)
+                        {
+                        <i class="bi bi-star text-secondary"></i>
+                        }
+                        <span class="text-muted">(@rating)</span>
+                    </span>
+                    <span>
+                        <i class="bi bi-heart-fill text-danger"></i> 收藏人數：
+                        <span class="count">@favoriteCount</span>
+                    </span>
+                </p>
+
+                <!-- 描述 -->
+                <p class="card-text">@Model.Description</p>
+                <!-- 詳細資料按鈕 -->
+                @if (!string.IsNullOrEmpty(userName))
+                {
+                <a href="@Url.Action("RecipeDetails", "Home" , new { id=Model.RecipeId })"
+                   class="btn btn-sm btn-outline-primary mt-2">詳細資料</a>
+
+                }
+                else
+                {
+                <a href="javascript:void(0);"
+                   class="btn btn-sm btn-outline-primary mt-2 need-login">詳細資料</a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $(".need-login").click(function (e) {
+                e.preventDefault();
+                var myModal = new bootstrap.Modal(document.getElementById('loginReminderModal'), {
+                    backdrop: false, // 不變黑畫面
+                    keyboard: true
+                });
+                myModal.show();
+            });
+        });
+    </script>
+
+    <!-- 登入提醒 Modal -->
+    <div class="modal fade" id="loginReminderModal" tabindex="-1" aria-labelledby="loginReminderLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginReminderLabel">請先登入</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+                </div>
+                <div class="modal-body">
+                    你需要登入才能使用此功能，例如查看詳細資料或收藏食譜。
+                </div>
+                <div class="modal-footer">
+                    <a href="@Url.Action("Login", "Home" )" class="btn btn-primary">前往登入</a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,204 @@
+﻿@model List<ECFood.Models.Recipes>
+
+@{
+    ViewBag.Title = "食譜瀏覽";
+}
+
+
+@{
+    var keyword = Request["keyword"];
+    var categoryId = Request["categoryId"];
+
+    var recipes = Model
+    .Where(r => r.IsPublished)
+    .Where(r => string.IsNullOrEmpty(keyword) || r.Title.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0)
+    .Where(r => string.IsNullOrEmpty(categoryId) || r.CategoryId.ToString() == categoryId)
+    .ToList();
+
+    var userName = Session["UserName"] as string;
+    var favoritedIds = ViewBag.FavoritedIds as List<int>
+        ?? new List<int>
+            ();
+}
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-6">
+        <div class="input-group">
+            <input type="text" name="keyword" class="form-control" placeholder="搜尋食譜標題" value="@keyword" />
+            <button type="submit" class="btn btn-primary">搜尋</button>
+        </div>
+    </div>
+    <div class="col-md-4 ms-auto">
+        <select name="categoryId" class="form-select" onchange="this.form.submit()">
+            <option value="">所有分類</option>
+            @foreach (var category in ViewBag.Categories)
+            {
+                <option value="@category.CategoryId" @(categoryId == category.CategoryId.ToString() ? "selected" : "" )>
+                    @category.Name
+                </option>
+            }
+        </select>
+    </div>
+
+</form>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    @foreach (var recipe in recipes)
+    {
+        var isFavorited = favoritedIds.Contains(recipe.RecipeId);
+        var youtubeId = ViewBag.YoutubeIds?[recipe.RecipeId] as string;
+        var hasYoutube = !string.IsNullOrEmpty(youtubeId);
+        var favoriteCount = ViewBag.FavoriteCounts?[recipe.RecipeId] ?? 0;
+
+        var rating = ViewBag.AverageRatings?.ContainsKey(recipe.RecipeId) == true ? ViewBag.AverageRatings[recipe.RecipeId] : 0.0;
+        var fullStars = (int)Math.Floor(rating);
+        var hasHalfStar = (rating - fullStars) >= 0.5;
+        var emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        <div class="col">
+            <div class="card h-100 shadow-sm rounded-3">
+                <img src="@(
+                    string.IsNullOrEmpty(recipe.ImageUrl)
+                        ? !string.IsNullOrEmpty(ViewBag.YoutubeIds[recipe.RecipeId])
+                            ? $"https://img.youtube.com/vi/{ViewBag.YoutubeIds[recipe.RecipeId]}/0.jpg"
+                            : "/Images/default.jpg" // 如果圖片與影片都沒有，可設預設圖片
+                        : recipe.ImageUrl
+                )" class="card-img-top" alt="@recipe.Title" style="height: 225px; object-fit: cover;" />
+
+                <div class="card-body">
+                    <!-- 標題與狀態：左右排列 -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title mb-0">@recipe.Title</h5>
+                        <span class="badge bg-success">上架</span>
+                    </div>
+
+                    <!-- 星星與收藏數：放在同一行，左右排 -->
+                    <p class="favorite-count d-flex align-items-center justify-content-between mt-2 mb-0">
+                        <span class="rating-stars me-0">
+                            @for (int i = 0; i < fullStars; i++)
+                            {
+                                <i class="bi bi-star-fill text-warning"></i>
+                            }
+                            @if (hasHalfStar)
+                            {
+                                <i class="bi bi-star-half text-warning"></i>
+                            }
+                            @for (int i = 0; i < emptyStars; i++)
+                            {
+                                <i class="bi bi-star text-secondary"></i>
+                            }
+                            <span class="text-muted">(@rating)</span>
+                        </span>
+                        <span>
+                            <i class="bi bi-heart-fill text-danger"></i> 收藏人數：
+                            <span class="count">@favoriteCount</span>
+                        </span>
+                    </p>
+
+
+                    <!-- 描述 -->
+                    <p class="card-text mt-3">@recipe.Description</p>
+
+
+                    <!-- 詳細與收藏按鈕 -->
+                    @if (!string.IsNullOrEmpty(userName))
+                    {
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="@Url.Action("RecipeDetails", "Home" , new { id=recipe.RecipeId })"
+                               class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center"
+                               style="height: 38px;">
+                                詳細資料
+                            </a>
+
+                            <button class="btn btn-sm @(isFavorited ? " btn-danger" : "btn-outline-danger" ) favorite-btn d-flex align-items-center justify-content-center"
+                                    style="height: 38px;"
+                                    data-id="@recipe.RecipeId">
+                                @(isFavorited ? "💔 取消收藏" : "❤️ 收藏")
+                            </button>
+                        </div>
+
+
+                    }
+                    else
+                    {
+                     
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="javascript:void(0);"
+                       class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center need-login"
+                       style="height: 38px;">
+                        詳細資料
+                    </a>
+                    <button class="btn btn-outline-danger btn-sm favorite-btn need-login">
+                        ❤️ 收藏
+                    </button>
+                </div>
+
+
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+
+
+<script type="text/javascript" src="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"></script>
+
+<script>
+                $(document).ready(function () {
+                    $(".favorite-btn").click(function () {
+                        var btn = $(this);
+                        var recipeId = btn.data("id");
+
+                        $.post("@Url.Action("ToggleFavorite", "Home")", { recipeId: recipeId }, function (res) {
+                            if (res.success) {
+                                if (res.isFavorite) {
+                                    btn.text("💔 取消收藏").removeClass("btn-outline-danger").addClass("btn-danger");
+                                } else {
+                                    btn.text("❤️ 收藏").removeClass("btn-danger").addClass("btn-outline-danger");
+                                }
+
+                                // ✅ 更新數字只改 <span class="count">
+                                var countSpan = btn.closest(".card-body").find(".favorite-count .count");
+                                var count = parseInt(countSpan.text());
+                                count += res.isFavorite ? 1 : -1;
+                                countSpan.text(count);
+
+                            } else {
+                                alert(res.message);
+                            }
+                        });
+                    });
+                });
+</script>
+
+<script>
+    $(document).ready(function () {
+        // 為 both 'a' 標籤和 'button' 按鈕添加事件綁定
+        $(".need-login").click(function (e) {
+            e.preventDefault();
+            var myModal = new bootstrap.Modal(document.getElementById('loginReminderModal'));
+            myModal.show();
+        });
+    });
+
+</script>
+
+<!-- 登入提醒 Modal -->
+<div class="modal fade" id="loginReminderModal" tabindex="-1" aria-labelledby="loginReminderLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginReminderLabel">請先登入</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body">
+                你需要登入才能使用此功能，例如查看詳細資料或收藏食譜。
+            </div>
+            <div class="modal-footer">
+                <a href="@Url.Action("Login", "Home" )" class="btn btn-primary">前往登入</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,155 @@
+﻿@model List<ECFood.Models.Recipes>
+@{
+    ViewBag.Title = "我的收藏";
+    var keyword = Request["keyword"];
+    var categoryId = Request["categoryId"];
+
+    var favoritedIds = ViewBag.FavoritedIds as List<int> ?? new List<int>();
+    var favoriteCounts = ViewBag.FavoriteCounts as Dictionary<int, int> ?? new Dictionary<int, int>();
+    var youtubeIds = ViewBag.YoutubeIds as Dictionary<int, string> ?? new Dictionary<int, string>();
+    var averageRatings = ViewBag.AverageRatings as Dictionary<int, double> ?? new Dictionary<int, double>();
+}
+
+
+<h2>我的收藏</h2>
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-6">
+        <div class="input-group">
+            <input type="text" name="keyword" class="form-control" placeholder="搜尋食譜標題" value="@keyword" />
+            <button type="submit" class="btn btn-primary">搜尋</button>
+        </div>
+    </div>
+    <div class="col-md-4 ms-auto">
+        <select name="categoryId" class="form-select" onchange="this.form.submit()">
+            <option value="">所有分類</option>
+            @foreach (var category in ViewBag.Categories)
+            {
+                <option value="@category.CategoryId" @(categoryId == category.CategoryId.ToString() ? "selected" : "" )>
+                    @category.Name
+                </option>
+            }
+        </select>
+    </div>
+
+</form>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">目前沒有符合條件的收藏食譜。</p>
+}
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    @foreach (var recipe in Model)
+    {
+        var videoId = youtubeIds.ContainsKey(recipe.RecipeId) ? youtubeIds[recipe.RecipeId] : "dQw4w9WgXcQ"; // default
+        var count = favoriteCounts.ContainsKey(recipe.RecipeId) ? favoriteCounts[recipe.RecipeId] : 0;
+
+        var rating = averageRatings?.ContainsKey(recipe.RecipeId) == true ? averageRatings[recipe.RecipeId] : 0;
+        var fullStars = (int)Math.Floor(rating);
+        var hasHalfStar = (rating - fullStars) >= 0.5;
+        var emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+        <div class="col">
+            <div class="card h-100 shadow-sm rounded-3">
+                <img src="@(
+                    string.IsNullOrEmpty(recipe.ImageUrl)
+                        ? !string.IsNullOrEmpty(ViewBag.YoutubeIds[recipe.RecipeId])
+                            ? $"https://img.youtube.com/vi/{ViewBag.YoutubeIds[recipe.RecipeId]}/0.jpg"
+                            : "/Images/default.jpg" // 如果圖片與影片都沒有，可設預設圖片
+                        : recipe.ImageUrl
+                )" class="card-img-top" alt="@recipe.Title" style="height: 225px; object-fit: cover;" />
+                <div class="card-body">
+                    <h5 class="card-title">@recipe.Title</h5>
+                    <!-- 收藏數跟星星 -->
+                    <p class="favorite-count d-flex align-items-center justify-content-between">
+                        <span class="rating-stars me-0">
+                            @for (int i = 0; i < fullStars; i++)
+                            {
+                                <i class="bi bi-star-fill text-warning"></i>
+                            }
+                            @if (hasHalfStar)
+                            {
+                                <i class="bi bi-star-half text-warning"></i>
+                            }
+                            @for (int i = 0; i < emptyStars; i++)
+                            {
+                                <i class="bi bi-star text-secondary"></i>
+                            }
+                            <span class="text-muted">(@rating)</span>
+                        </span>
+                        <span>
+                            <i class="bi bi-heart-fill text-danger"></i> 收藏人數：
+                            <span class="count">@ViewBag.FavoriteCounts[recipe.RecipeId]</span>
+                        </span>
+                    </p>
+
+                    <!--描述-->
+                    <p class="card-text">@recipe.Description</p>
+
+
+                    <div class="d-flex gap-2 mt-2">
+                        <a href="@Url.Action("RecipeDetails", "Home", new { id = recipe.RecipeId })"
+                           class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center"
+                           style="height: 38px;">
+                            詳細資料
+                        </a>
+
+                        <button class="btn btn-sm favorite-btn @(favoritedIds.Contains(recipe.RecipeId) ? "btn-danger" : "btn-outline-danger")"
+                                style="height: 38px;"
+                                data-id="@recipe.RecipeId">
+                            @(favoritedIds.Contains(recipe.RecipeId) ? "💔 取消收藏" : "❤️ 收藏")
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            $(".favorite-btn").click(function () {
+                var btn = $(this);
+                var recipeId = btn.data("id");
+                var isFavorited = btn.hasClass("btn-danger");
+
+                // 如果是「取消收藏」，跳出 SweetAlert 浮動視窗
+                if (isFavorited) {
+                    Swal.fire({
+                        title: "確定要取消收藏嗎？",
+                        text: "取消後將不再出現在你的收藏清單中。",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#3085d6",
+                        confirmButtonText: "確定",
+                        cancelButtonText: "取消"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            toggleFavorite(recipeId);
+                        }
+                    });
+                } else {
+                    // 新增收藏時不需確認
+                    toggleFavorite(recipeId);
+                }
+
+                function toggleFavorite(recipeId) {
+                    $.post("@Url.Action("ToggleFavorite", "Home")", { recipeId: recipeId }, function (res) {
+                        if (res.success) {
+                            // 成功後直接重新整理頁面
+                            location.reload();
+                        } else {
+                            Swal.fire("錯誤", res.message || "操作失敗", "error");
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

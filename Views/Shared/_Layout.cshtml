@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - ECFood👍🏻</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+    <link rel="icon" type="image/x-icon" href="@Url.Content("~/Content/favicon.ico")" />
+    <link rel="shortcut icon" href="@Url.Content("~/Content/favicon.ico")" />
+
+    <style>
+        .navbar-nav .nav-link {
+            color: #000000 !important; /* 預設黑色 */
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+            .navbar-nav .nav-link:hover {
+                color: #D35400 !important; /* 滑鼠移過去變橘色 */
+            }
+
+            .navbar-nav .nav-link:active {
+                color: #A04000 !important; /* 點擊時深橘色 */
+            }
+
+            .navbar-brand {
+                font-size: 30px !important;
+                font-weight: bold;
+                color: #000 !important;
+            }
+
+            .navbar-brand:hover {
+                color: #D35400 !important;
+            }
+    </style>
+
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark" style="background-color: #FFD580;">
+        <div class="container">
+            @{
+                var userName = Session["UserName"] as string;
+                var userRole = Session["UserRole"] as string;
+            }
+
+            <!-- LOGO 放在這裡，不要放到 ul 裡 -->
+            @if (!string.IsNullOrEmpty(userName))
+            {
+                if (userRole == "管理者")
+                {
+                    @Html.ActionLink("ECFood", "A_home", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                }
+                else if (userRole == "一般會員")
+                {
+                    @Html.ActionLink("ECFood", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                }
+            }
+            else
+            {
+                @Html.ActionLink("ECFood", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                <ul class="navbar-nav">
+                    <li class="nav-item">@Html.ActionLink("食譜瀏覽", "RecipeBrowse", "Home", null, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("關於我們", "AboutUs", "Home", null, new { @class = "nav-link" })</li>
+                </ul>
+
+            }
+
+            <!-- 漢堡選單按鈕 -->
+            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
+                <!-- 左側 -->
+                <ul class="navbar-nav">
+                    @if (!string.IsNullOrEmpty(userName))
+                    {
+                        if (userRole == "管理者")
+                        {
+                            <li class="nav-item">@Html.ActionLink("會員管理", "A_users", "Home", null, new { @class = "nav-link" })</li>
+                            <li class="nav-item">@Html.ActionLink("食譜管理", "A_recipes", "Home", null, new { @class = "nav-link" })</li>
+                            <li class="nav-item">@Html.ActionLink("意見箱", "A_feedbacks", "Home", null, new { @class = "nav-link" })</li>
+                        }
+                        else if (userRole == "一般會員")
+                        {
+                            <li class="nav-item">@Html.ActionLink("食譜瀏覽", "RecipeBrowse", "Home", null, new { @class = "nav-link" })</li>
+                            <li class="nav-item">@Html.ActionLink("關於我們", "AboutUs", "Home", null, new { @class = "nav-link" })</li>
+                        }
+                    }
+                </ul>
+
+                <!-- 右側 -->
+                <ul class="navbar-nav ms-auto">
+                    @if (!string.IsNullOrEmpty(userName))
+                    {
+                        if (userRole == "一般會員" || userRole == null)
+                        {
+                            <li class="nav-item">@Html.ActionLink("我的收藏", "Favorites", "Home", null, new { @class = "nav-link" })</li>
+                            <li class="nav-item">@Html.ActionLink("我的食譜", "MyRecipes", "Home", null, new { @class = "nav-link" })</li>
+                        }
+                        <li class="nav-item"><span class="nav-link text-dark">Hello, @userName</span></li>
+                        <li class="nav-item">@Html.ActionLink("登出", "Logout", "Home", null, new { @class = "nav-link" })</li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">@Html.ActionLink("登入", "Login", "Home", null, new { @class = "nav-link" })</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year - 🍛Easy Cook Food🍜
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

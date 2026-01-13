@@ -1,0 +1,40 @@
+﻿@{
+    ViewBag.Title = "首頁";
+}
+
+
+@{
+    var favoriteCounts = ViewBag.FavoriteCounts as Dictionary<int, int>;
+    var averageRatings = ViewBag.AverageRatings as Dictionary<int, double>;
+    var youtubeIds = ViewBag.YoutubeIds as Dictionary<int, string>;
+}
+
+<!-- 熱門食譜 -->
+<h3 class="mt-4">🔥 熱門食譜</h3>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    @foreach (ECFood.Models.Recipes recipe in ViewBag.MostFavorited)
+    {
+        @Html.Partial("_RecipeCard", recipe)
+
+    }
+</div>
+
+<!-- 讚不絕口 -->
+<h3 class="mt-5">🌟 讚不絕口</h3>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    @foreach (ECFood.Models.Recipes recipe in ViewBag.TopRated)
+    {
+        @Html.Partial("_RecipeCard", recipe)
+
+    }
+</div>
+
+<!-- 最新上架 -->
+<h3 class="mt-5">🆕 最新上架</h3>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    @foreach (ECFood.Models.Recipes recipe in ViewBag.Newest)
+    {
+        @Html.Partial("_RecipeCard", recipe)
+
+    }
+</div>

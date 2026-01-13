@@ -1,0 +1,69 @@
+﻿@{
+    ViewBag.Title = "關於我們";
+}
+
+<!-- About Us Section -->
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="p-5 rounded shadow bg-white text-center">
+                <h1 class="mb-4 text-primary">關於我們</h1>
+                <p class="lead mb-3">
+                    我們是一群熱愛美食、喜歡分享的料理愛好者，致力於打造一個溫暖而實用的料理教學與分享平台。無論你是料理新手，還是擁有豐富經驗的料理創作者，都能在這裡找到靈感、學習技巧，並將自己的料理故事傳遞給更多人。
+
+                    我們相信，美食不只是味蕾的享受，更是情感的連結與文化的傳承。
+                    透過結合食譜教學影片、個人食譜收藏、留言互動等功能，平台鼓勵使用者彼此交流，讓每一道料理都能激發更多創意與共鳴。
+
+                    未來，我們也將持續優化平台功能，推出更多符合使用者需求的互動機制與內容，陪伴大家一起在料理的路上越走越遠。
+                </p>
+                <p class="text-start">
+                    📞 聯絡電話：02-1234-5678<br>
+                    📧 聯絡信箱：service@cookwithus.com
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Us Form Section -->
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="p-5 rounded shadow bg-white border">
+                <h2 class="text-center mb-4 text-success fw-bold">聯絡我們</h2>
+                <p class="text-center lead mb-4 text-muted">
+                    有任何問題或建議，請隨時填寫以下表單與我們聯絡。
+                </p>
+
+  
+           
+                <!-- 表單開始 -->
+                <form action="/Home/SubmitContactForm" method="POST">
+                    <div class="mx-auto" style="max-width: 500px;">
+                        <div class="mb-3">
+                            <label for="Name" class="form-label fw-semibold">姓名</label>
+                            <input type="text" class="form-control rounded-pill px-3 py-2" id="Name" name="Name" placeholder="請輸入您的姓名" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Email" class="form-label fw-semibold">電子郵件</label>
+                            <input type="email" class="form-control rounded-pill px-3 py-2" id="Email" name="Email" placeholder="example@mail.com" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="Message" class="form-label fw-semibold">留言內容</label>
+                            <textarea class="form-control rounded-4 px-3 py-2" id="Message" name="Message" rows="5" placeholder="請輸入您的留言" required></textarea>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success px-5 py-2 rounded-pill shadow-sm">
+                                送出
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,61 @@
+﻿@{
+    ViewData["Title"] = "登入";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow rounded-4 border-0">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4 text-primary fw-bold">會員登入</h2>
+                    <p class="text-center text-muted mb-4">歡迎回來，請輸入您的帳號與密碼</p>
+
+                    <form method="post" action="/Home/Login">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">電子郵件</label>
+                            <input name="Email" type="email" class="form-control rounded-pill px-3 py-2" placeholder="example@mail.com" required />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">密碼</label>
+                            <input id="passwordInput" name="Password" type="password" class="form-control rounded-pill px-3 py-2" placeholder="請輸入密碼" required />
+                        </div>
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger rounded-3">
+                                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <div>@error.ErrorMessage</div>
+                                }
+                            </div>
+                        }
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary rounded-pill py-2 fw-semibold">登入</button>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <span>還沒有帳號嗎？</span>
+                            <a href="/Home/Register" class="btn btn-outline-secondary rounded-pill ms-2">立即註冊</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div><script>
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('passwordInput');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            toggleIcon.classList.remove("bi-eye-slash");
+            toggleIcon.classList.add("bi-eye");
+        } else {
+            passwordInput.type = "password";
+            toggleIcon.classList.remove("bi-eye");
+            toggleIcon.classList.add("bi-eye-slash");
+        }
+    }
+</script>
+</div>

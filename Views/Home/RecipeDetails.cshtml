@@ -1,0 +1,188 @@
+﻿@model ECFood.Models.Recipes
+
+@{
+    ViewData["Title"] = @Model.Title;
+}
+@{
+    bool isFavorited = ViewBag.IsFavorited ?? false;
+}
+
+
+
+
+<style>
+    body {
+        font-size: 1.2rem;
+    }
+
+    h2 {
+        font-size: 2rem;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="card shadow p-4 mb-4">
+
+        <div class="row align-items-center">
+            @if (!string.IsNullOrEmpty(Model.YoutubeUrl) && Model.YoutubeUrl != "0")
+            {
+                <!-- 顯示 YouTube 影片 -->
+                <iframe width="640" height="640"
+                        src="https://www.youtube.com/embed/@ViewBag.YoutubeId"
+                        title="@Model.Title"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                </iframe>
+            }
+            else
+            {
+                <!-- 顯示圖片 -->
+                <img src="@Model.ImageUrl" alt="@Model.Title" width="640" height="640" class="img-fluid" />
+            }
+
+
+
+            <div class="col-md-6">
+                <h2 class="mb-3 text-success fw-bold ">@Model.Title</h2>
+                <p><strong class="text-dark">描述：</strong><br />@Model.Description</p>
+                <div class="row mt-3">
+                    <div class="col-md-4"><strong>難度：</strong> @Model.Difficulty</div>
+                    <div class="col-md-4"><strong>烹飪時間：</strong> @Model.CookTime 分鐘</div>
+                    <div class="col-md-4"><strong>分類：</strong> @ViewBag.CategoryName</div>
+
+                </div>
+
+                <!-- 按鈕區塊 -->
+                <div class="border-top border-bottom py-3 my-3">
+                    <div class="d-flex justify-content-between text-center fs-5">
+                        <button class="btn @(isFavorited ? "btn-danger" : "btn-outline-danger") favorite-btn"
+                                data-id="@Model.RecipeId">
+                            @(isFavorited ? "💔 取消收藏" : "❤️ 收藏")
+                        </button>
+                        <button class="btn btn-link text-decoration-none" onclick="shareLink()">
+                            <i class="bi bi-share"></i> 分享
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--<a href="https://www.youtube.com/watch?v=@Model.YoutubeUrl" target="_blank" class="btn btn-danger mt-3">
+            <i class="bi bi-play-circle-fill me-1"></i>觀看影片
+        </a>-->
+        <p>
+            <strong class="text-dark">食材：</strong><br />
+            <div class="bg-light p-3 rounded border">
+                @Html.Raw(Model.Ingredients?.Replace("\n", "<br />"))
+            </div>
+        </p>
+
+        <p>
+            <strong class="text-dark">步驟：</strong><br />
+            <div class="bg-light p-3 rounded border">
+                @Html.Raw(Model.Steps?.Replace("\n", "<br />"))
+            </div>
+        </p>
+
+
+
+
+
+
+    </div>
+</div>
+
+<hr />
+
+<!-- 留言區 -->
+<div class="container mb-5">
+    <div class="card shadow p-4">
+        <h4 class="mb-4 text-primary">留言區</h4>
+
+        @if (ViewBag.Comments != null && ((List<ECFood.Models.Comments>)ViewBag.Comments).Count > 0)
+        {
+            foreach (var comment in (List<ECFood.Models.Comments>)ViewBag.Comments)
+            {
+                <div class="card my-3 border-start border-4 border-warning">
+                    <div class="card-body">
+                        <p class="mb-1">@comment.Content</p>
+                        <small class="text-muted">評分：@comment.Rating / 發表時間：@comment.CommentDate</small>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="text-muted">目前尚無留言，歡迎成為第一位留言者！</p>
+        }
+
+        <!-- 留言表單 -->
+        <div class="mt-4">
+            @using (Html.BeginForm("AddComment", "Home", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.Hidden("RecipeId", Model.RecipeId)
+
+                <div class="form-group mb-3">
+                    <label for="Content" class="form-label">留言內容：</label>
+                    <textarea class="form-control" name="Content" rows="3" style="min-height: 120px; max-width: 100%;" required></textarea>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="Rating" class="form-label">評分（1-5）：</label>
+                    <input type="number" class="form-control" name="Rating" min="1" max="5" required />
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-chat-dots me-1"></i>送出留言
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    function shareLink() {
+        const url = window.location.href;
+
+        // 複製到剪貼簿
+        navigator.clipboard.writeText(url).then(function () {
+            alert("網址已複製到剪貼簿！");
+        }).catch(function (err) {
+            console.error('無法複製：', err);
+            alert("複製失敗，請手動複製網址");
+        });
+    }
+</script>
+<script>
+    $(document).ready(function () {
+        $(".favorite-btn").click(function () {
+            var button = $(this);
+            var recipeId = button.data("id");
+
+            $.ajax({
+                url: '@Url.Action("ToggleFavorite", "Home")',
+                type: 'POST',
+                data: { recipeId: recipeId },
+                success: function (response) {
+                    if (response.success) {
+                        if (response.isFavorite) {
+                            button.removeClass("btn-outline-danger").addClass("btn-danger");
+                            button.html("💔 取消收藏");
+                        } else {
+                            button.removeClass("btn-danger").addClass("btn-outline-danger");
+                            button.html("❤️ 收藏");
+                        }
+                    } else {
+                        alert(response.message || "操作失敗！");
+                    }
+                },
+                error: function () {
+                    alert("發生錯誤，請稍後再試！");
+                }
+            });
+        });
+    });
+</script>
+
+

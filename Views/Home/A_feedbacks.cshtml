@@ -1,0 +1,55 @@
+﻿@model List<ECFood.Models.ContactForms>
+
+@{
+    ViewBag.Title = "意見箱";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<div class="container mt-4">
+    <h3 class="text-primary mb-4">
+        <i class="bi bi-chat-dots-fill me-2"></i>意見箱管理
+    </h3>
+
+    <!-- 日期查詢表單 -->
+    <form method="get" action="/Home/A_feedbacks" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <label class="form-label">起始日期</label>
+            <input type="date" name="startDate" class="form-control" value="@Request.QueryString["startDate"]" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">結束日期</label>
+            <input type="date" name="endDate" class="form-control" value="@Request.QueryString["endDate"]" />
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> 查詢
+            </button>
+        </div>
+    </form>
+
+    <!-- 意見表格 -->
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light text-center">
+            <tr>
+                <th>姓名</th>
+                <th>Email</th>
+                <th>訊息內容</th>
+                <th>送出時間</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Email</td>
+                    <td>@item.Message</td>
+                    <td class="text-center">@item.SubmitDate.ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

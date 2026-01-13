@@ -1,0 +1,51 @@
+﻿@model ECFood.Models.Users
+
+@{
+    ViewBag.Title = "會員編輯";
+}
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="container mt-5" style="max-width: 600px;">
+    <h3 class="mb-4 text-primary">
+        <i class="bi bi-person-lines-fill me-2"></i>會員資料修改
+    </h3>
+
+    <form method="post" action="/Home/EditUserPage">
+        <input type="hidden" name="UserId" value="@Model.UserId" />
+
+        <div class="mb-3">
+            <label class="form-label"><i class="bi bi-person-fill me-1"></i>名稱</label>
+            <input type="text" name="UserName" class="form-control" value="@Model.UserName" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label"><i class="bi bi-envelope-at-fill me-1"></i>Email</label>
+            <input type="email" name="Email" class="form-control" value="@Model.Email" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label"><i class="bi bi-lock-fill me-1"></i>密碼</label>
+            <input type="text" name="Password" class="form-control" value="@Model.Password" required />
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label"><i class="bi bi-shield-lock-fill me-1"></i>角色</label>
+            <select name="Role" class="form-select">
+                <option value="一般會員" @(Model.Role == "一般會員" ? "selected" : "")>一般會員</option>
+                <option value="管理者" @(Model.Role == "管理者" ? "selected" : "")>管理者</option>
+            </select>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-save me-1"></i>儲存變更
+            </button>
+            <a href="/Home/A_users" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left-circle me-1"></i>返回
+            </a>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,118 @@
+﻿@model List<ECFood.Models.Users>
+
+@{
+    ViewBag.Title = "會員管理";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="container mt-4">
+    <h2 class="mb-3 text-primary"><i class="bi bi-people-fill me-2"></i>會員管理</h2>
+    <hr />
+
+    <!-- 搜尋列 -->
+    <form method="get" action="/Home/A_users" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="輸入使用者名稱查詢" />
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> 搜尋</button>
+        </div>
+    </form>
+
+    <!-- 新增按鈕 -->
+    <div class="mb-3 text-end">
+        <a href="/Home/AddUserPage" class="btn btn-success">
+            <i class="bi bi-person-plus"></i> 新增會員
+        </a>
+    </div>
+
+    <!-- 資料表 -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light text-center">
+                <tr>
+                    <th>ID</th>
+                    <th>名稱</th>
+                    <th>Email</th>
+                    <th>密碼</th>
+                    <th>角色</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr id="row-@user.UserId">
+                        <td class="text-center">@user.UserId</td>
+                        <td>@user.UserName</td>
+                        <td>@user.Email</td>
+                        <td>
+                            @{
+                                var masked = string.IsNullOrEmpty(user.Password) ? "" : new string('•', user.Password.Length);
+                            }
+                            <span class="text-muted">@masked <i class="bi bi-eye-slash ms-1"></i></span>
+                        </td>
+                        <td class="text-center">@user.Role</td>
+                        <td class="text-center">
+                            <a href="/Home/EditUserPage/@user.UserId" class="btn btn-sm btn-warning me-1">
+                                <i class="bi bi-pencil-square"></i> 修改
+                            </a>
+                            <button type="button" class="btn btn-sm btn-danger delete-btn"
+                                    data-userid="@user.UserId" data-username="@user.UserName">
+                                <i class="bi bi-trash"></i> 刪除
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- SweetAlert 刪除邏輯 -->
+<script>
+    $(document).ready(function () {
+        $(".delete-btn").click(function () {
+            var userId = $(this).data("userid");
+            var userName = $(this).data("username");
+
+            Swal.fire({
+                title: `確定要刪除 "${userName}" 嗎？`,
+                text: "此操作無法復原！",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "是的，刪除！",
+                cancelButtonText: "取消"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Home/AjaxDeleteUser',
+                        type: 'POST',
+                        data: { id: userId },
+                        success: function (res) {
+                            if (res.success) {
+                                $("#row-" + userId).remove();
+                                Swal.fire("刪除成功", `"${userName}" 已被刪除`, "success");
+                            } else {
+                                Swal.fire("刪除失敗", "無法找到該使用者", "error");
+                            }
+                        }
+                    });
+                }
+            });
+        });
+
+        @if (TempData["Success"] != null)
+        {
+            <text>
+            Swal.fire({ icon: 'success', title: '成功', text: '@TempData["Success"]' });
+            </text>
+        }
+        else if (TempData["Error"] != null)
+        {
+            <text>
+            Swal.fire({ icon: 'error', title: '錯誤', text: '@TempData["Error"]' });
+            </text>
+        }
+    });
+</script>

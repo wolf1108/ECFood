@@ -1,0 +1,282 @@
+﻿@{
+    ViewData["Title"] = "我的食譜";
+}
+
+<div class="container mt-4">
+    <!-- 新增食譜按鈕 -->
+    <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#recipeAddModal">
+        新增食譜
+    </button>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4 mt-3">
+        @foreach (var recipe in Model)
+        {
+            <div class="col">
+                <div class="card">
+                    <img src="@(
+                    string.IsNullOrEmpty(recipe.ImageUrl)
+                        ? !string.IsNullOrEmpty(ViewBag.YoutubeIds[recipe.RecipeId])
+                            ? $"https://img.youtube.com/vi/{ViewBag.YoutubeIds[recipe.RecipeId]}/0.jpg"
+                            : "/Images/default.jpg" // 如果圖片與影片都沒有，可設預設圖片
+                        : recipe.ImageUrl
+                )" class="card-img-top" alt="@recipe.Title" style="height: 225px; object-fit: cover;" />
+
+                    <div class="card-body">
+                        <h5 class="card-title">@recipe.Title</h5>
+                        <p class="card-text">@recipe.Description</p>
+                        <p class="card-text">
+                            @if (recipe.IsPublished)
+                            {
+                                <span class="badge bg-success">上架</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">未上架</span>
+                            }
+                        </p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#recipeEditModal"
+                                    data-recipe-id="@recipe.RecipeId"
+                                    data-title="@recipe.Title"
+                                    data-youtube="@recipe.YoutubeUrl"
+                                    data-desc="@recipe.Description"
+                                    data-ingredients="@recipe.Ingredients"
+                                    data-steps="@recipe.Steps"
+                                    data-difficulty="@recipe.Difficulty"
+                                    data-cooktime="@recipe.CookTime"
+                                    data-categoryid="@recipe.CategoryId"
+                                    data-ispublished="@recipe.IsPublished">
+                                修改
+                            </button>
+
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteRecipeModal"
+                                    data-recipe-id="@recipe.RecipeId"
+                                    data-title="@recipe.Title">
+                                刪除
+                            </button>
+
+                            <a href="@Url.Action("RecipeDetails", "Home" , new { id=recipe.RecipeId })" class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center">
+                                詳細資料
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- 🔽 Modal: 新增食譜 -->
+<div class="modal fade" id="recipeAddModal" tabindex="-1" aria-labelledby="recipeAddModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <form method="post" id="addRecipeForm" action="/Home/Recipe_Add" enctype="multipart/form-data" class="modal-content rounded-4 shadow" >
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-primary w-100 text-center">新增食譜</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body px-5 pt-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">食譜標題</label>
+                        <input type="text" class="form-control rounded-pill px-4" name="Title" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">YouTube影片網址</label>
+                        <input type="text" class="form-control rounded-pill px-4" name="YoutubeUrl" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">食譜圖片 <span class="text-danger">*</span></label>
+                        <input type="file" name="ImageFile" accept="image/*" class="form-control" / >
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">簡介</label>
+                        <textarea class="form-control rounded-3 px-3 py-2" name="Description" rows="4" style="min-height: 120px; max-width: 100%;" placeholder="簡要介紹此道料理"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">食材</label>
+                        <textarea class="form-control rounded-3 px-3 py-2" name="Ingredients" rows="4" style="min-height: 120px; max-width: 100%;" required></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">步驟說明</label>
+                        <textarea class="form-control rounded-3 px-3 py-2" name="Steps" rows="5" style="min-height: 140px; max-width: 100%;" required></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">難度</label>
+                        <select class="form-select" name="Difficulty" required>
+                            <option value="">請選擇</option>
+                            <option value="簡單">簡單</option>
+                            <option value="中等">中等</option>
+                            <option value="困難">困難</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">大約所需時間（分鐘）</label>
+                        <input type="number" class="form-control rounded-pill px-4" name="CookTime" min="1" required />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">分類</label>
+                        <select class="form-select" name="CategoryId" required>
+                            <option value="">請選擇</option>
+                            @foreach (var category in ViewBag.Categories)
+                            {
+                                <option value="@category.CategoryId">@category.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">是否公開</label>
+                        <select class="form-select" name="IsPublished">
+                            <option value="true">公開</option>
+                            <option value="false">未公開</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light rounded-bottom-4 px-4">
+                <button type="submit" class="btn btn-primary px-4 rounded-pill fw-semibold">新增食譜</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 🔄 Modal: 修改食譜 -->
+<div class="modal fade" id="recipeEditModal" tabindex="-1" aria-labelledby="recipeEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <form method="post" id="addRecipeForm" action="/Home/Recipe_Edit" enctype="multipart/form-data" class="modal-content rounded-4 shadow" >
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-primary w-100 text-center">修改食譜</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body px-5 pt-4">
+                <div class="row g-4">
+                    <input type="hidden" id="editRecipeId" name="RecipeId" />
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">食譜標題</label>
+                        <input type="text" class="form-control rounded-pill px-4" name="Title" id="editTitle" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">YouTube影片網址</label>
+                        <input type="text" class="form-control rounded-pill px-4" name="YoutubeUrl" id="editYoutubeUrl" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">食譜圖片 <span class="text-danger">*</span></label>
+                        <input type="file" name="ImageFile" accept="image/*" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">簡介</label>
+                        <textarea class="form-control rounded-3 px-4 py-2" name="Description" id="editDescription" rows="4" style="min-height: 120px; max-width: 100%;"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">食材</label>
+                        <textarea class="form-control rounded-3 px-4 py-2" name="Ingredients" id="editIngredients" rows="4" style="min-height: 120px; max-width: 100%;" required></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">步驟說明</label>
+                        <textarea class="form-control rounded-3 px-4 py-2" name="Steps" id="editSteps" rows="5" style="min-height: 120px; max-width: 100%;" required></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">難度</label>
+                        <select class="form-select" name="Difficulty" id="editDifficulty" required>
+                            <option value="">請選擇</option>
+                            <option value="簡單">簡單</option>
+                            <option value="中等">中等</option>
+                            <option value="困難">困難</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">大約所需時間（分鐘）</label>
+                        <input type="number" class="form-control rounded-pill px-4" name="CookTime" id="editCookTime" min="1" required />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">分類</label>
+                        <select class="form-select" name="CategoryId" id="editCategoryId" required>
+                            <option value="">請選擇</option>
+                            @foreach (var category in ViewBag.Categories)
+                            {
+                                <option value="@category.CategoryId">@category.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">是否公開</label>
+                        <select class="form-select" name="IsPublished" id="editIsPublished">
+                            <option value="true">公開</option>
+                            <option value="false">未公開</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light rounded-bottom-4 px-4">
+                <button type="submit" class="btn btn-primary px-4 rounded-pill fw-semibold">儲存變更</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ❌ Modal: 刪除 -->
+<div class="modal fade" id="deleteRecipeModal" tabindex="-1" aria-labelledby="deleteRecipeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="post" action="/Home/Recipe_Delete" class="modal-content">
+            <input type="hidden" id="deleteRecipeId" name="RecipeId" />
+            <div class="modal-header">
+                <h5 class="modal-title">確認刪除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>確定要刪除食譜：<strong id="deleteRecipeTitle"></strong>？</p>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-danger">刪除</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- ✅ JS -->
+<script>
+
+    document.getElementById("addRecipeForm").addEventListener("submit", function (e) {
+        const youtubeInput = document.querySelector("input[name='YoutubeUrl']");
+        const imageInput = document.querySelector("input[name='ImageFile']");
+
+        const youtubeFilled = youtubeInput.value.trim() !== "";
+        const imageFilled = imageInput.files.length > 0;
+
+        if (!youtubeFilled && !imageFilled) {
+            e.preventDefault(); // 阻止表單提交
+            Swal.fire({
+                icon: 'warning',
+                title: '請填寫必要欄位',
+                text: '請上傳圖片或提供影片網址，至少擇一。',
+                confirmButtonText: '了解',
+                confirmButtonColor: '#3085d6'
+            });
+        }
+    });
+
+    const editModal = document.getElementById('recipeEditModal');
+    editModal.addEventListener('show.bs.modal', function (event) {
+        const btn = event.relatedTarget;
+        document.getElementById('editRecipeId').value = btn.getAttribute('data-recipe-id');
+        document.getElementById('editTitle').value = btn.getAttribute('data-title');
+        document.getElementById('editYoutubeUrl').value = btn.getAttribute('data-youtube');
+        document.getElementById('editDescription').value = btn.getAttribute('data-desc');
+        document.getElementById('editIngredients').value = btn.getAttribute('data-ingredients');
+        document.getElementById('editSteps').value = btn.getAttribute('data-steps');
+        document.getElementById('editDifficulty').value = btn.getAttribute('data-difficulty');
+        document.getElementById('editCookTime').value = btn.getAttribute('data-cooktime');
+        document.getElementById('editCategoryId').value = btn.getAttribute('data-categoryid');
+        document.getElementById('editIsPublished').value = btn.getAttribute('data-ispublished').toLowerCase() === 'true' ? 'true' : 'false';
+    });
+
+    const deleteModal = document.getElementById('deleteRecipeModal');
+    deleteModal.addEventListener('show.bs.modal', function (event) {
+        const btn = event.relatedTarget;
+        document.getElementById('deleteRecipeId').value = btn.getAttribute('data-recipe-id');
+        document.getElementById('deleteRecipeTitle').textContent = btn.getAttribute('data-title');
+    });
+
+
+</script>

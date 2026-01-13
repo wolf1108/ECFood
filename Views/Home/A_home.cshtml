@@ -1,0 +1,165 @@
+﻿@{
+    ViewBag.Title = "後台管理";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container mt-5">
+
+    <!-- 卡片區塊 -->
+    <div class="row mb-5 text-center">
+        <div class="col-md-3">
+            <div class="card text-bg-primary shadow">
+                <div class="card-body">
+                    <h5 class="card-title">帳號總數</h5>
+                    <p class="card-text fs-4">@ViewBag.TotalUsers 人</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-success shadow">
+                <div class="card-body">
+                    <h5 class="card-title">今日新增用戶</h5>
+                    <p class="card-text fs-4">@ViewBag.TodayNewUsers 人</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-warning shadow">
+                <div class="card-body">
+                    <h5 class="card-title">食譜總數</h5>
+                    <p class="card-text fs-4">@ViewBag.TotalRecipes 筆</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-danger shadow">
+                <div class="card-body">
+                    <h5 class="card-title">今日新增食譜</h5>
+                    <p class="card-text fs-4">@ViewBag.TodayNewRecipes 筆</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 圖表區塊 -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">用戶註冊趨勢（近30天）</div>
+                <div class="card-body">
+                    <canvas id="userChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white text-center">食譜上傳趨勢</div>
+                <div class="card-body">
+                    <canvas id="recipeChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark text-center">收藏次數趨勢</div>
+                <div class="card-body">
+                    <canvas id="favoriteChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white text-center">留言與評分趨勢</div>
+                <div class="card-body">
+                    <canvas id="commentChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 模擬範例 Chart.js 資料，實際可用 ViewBag 傳入資料字串後組成 JS 陣列 -->
+<script>
+    const userData = @Html.Raw(Json.Encode(ViewBag.UserTrend));
+    const recipeData = @Html.Raw(Json.Encode(ViewBag.RecipeTrend));
+    const favoriteData = @Html.Raw(Json.Encode(ViewBag.FavoriteTrend));
+    const commentData = @Html.Raw(Json.Encode(ViewBag.CommentTrend));
+    const ratingData = @Html.Raw(Json.Encode(ViewBag.AvgRatingTrend));
+
+
+    new Chart(document.getElementById('userChart'), {
+        type: 'line',
+        data: {
+            labels: userData.map(d => d.Date),
+            datasets: [{
+                label: '新增用戶數',
+                data: userData.map(d => d.Count),
+                fill: false,
+                borderColor: 'blue'
+            }]
+        }
+    });
+
+    new Chart(document.getElementById('recipeChart'), {
+        type: 'line',
+        data: {
+            labels: recipeData.map(d => d.Date),
+            datasets: [{
+                label: '新增食譜數',
+                data: recipeData.map(d => d.Count),
+                fill: false,
+                borderColor: 'green'
+            }]
+        }
+    });
+
+    new Chart(document.getElementById('favoriteChart'), {
+        type: 'bar',
+        data: {
+            labels: favoriteData.map(d => d.Date),
+            datasets: [{
+                label: '每日收藏數',
+                data: favoriteData.map(d => d.Count),
+                backgroundColor: 'orange'
+            }]
+        }
+    });
+
+    new Chart(document.getElementById('commentChart'), {
+        type: 'bar',
+        data: {
+            labels: commentData.map(d => d.Date),
+            datasets: [
+                {
+                    label: '留言數',
+                    data: commentData.map(d => d.Count),
+                    backgroundColor: 'red'
+                },
+                {
+                    label: '平均評分',
+                    data: ratingData.map(d => d.Avg),
+                    type: 'line',
+                    borderColor: 'black',
+                    yAxisID: 'y2'
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    position: 'left'
+                },
+                y2: {
+                    beginAtZero: true,
+                    position: 'right',
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                }
+            }
+        }
+    });
+</script>

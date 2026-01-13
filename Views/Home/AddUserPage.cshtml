@@ -1,0 +1,49 @@
+﻿@model ECFood.Models.Users
+
+@{
+    ViewBag.Title = "新增會員";
+}
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="container mt-5" style="max-width: 600px;">
+    <h3 class="mb-4 text-success">
+        <i class="bi bi-person-plus-fill me-2"></i>新增會員
+    </h3>
+
+    <form method="post" action="/Home/AddUserPage">
+        <div class="mb-3">
+            <label class="form-label"><i class="bi bi-person-fill me-1"></i>名稱</label>
+            <input type="text" name="UserName" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label"><i class="bi bi-envelope-at-fill me-1"></i>Email</label>
+            <input type="email" name="Email" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label"><i class="bi bi-lock-fill me-1"></i>密碼</label>
+            <input type="text" name="Password" class="form-control" required />
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label"><i class="bi bi-shield-lock-fill me-1"></i>角色</label>
+            <select name="Role" class="form-select">
+                <option value="一般會員">一般會員</option>
+                <option value="管理者">管理者</option>
+            </select>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>新增
+            </button>
+            <a href="/Home/A_users" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle me-1"></i>取消
+            </a>
+        </div>
+    </form>
+</div>
